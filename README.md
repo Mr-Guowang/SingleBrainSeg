@@ -8,7 +8,8 @@ This repository is under active maintenance. We will continue to update the code
 
 | Date | Update |
 | --- | --- |
-| 2026-10-10 | Initial GitHub release with Python testing code and test weights. |
+| 2026-10-10 | Update the testing code and test weights. Now you can try on the test data / your own data. |
+| 2026-10-9 | Initial GitHub release with Python code. |
 
 ## Notice
 
