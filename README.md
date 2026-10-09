@@ -23,7 +23,7 @@ The test weights and shared files are available via **Baidu Netdisk**:
 - **Download link:** [Baidu Netdisk](https://pan.baidu.com/s/1FDvIuLA0eJ1rGxUB9B1YSA?pwd=g7yu)
 - **Extraction code:** `g7yu`
 
-After downloading, specify the path to the model checkpoint using the `--checkpoint` argument in the inference command below.
+After downloading, specify the absolute path to the model checkpoint using the `--checkpoint` argument in the inference command below.
 
 ## Installation
 
@@ -45,72 +45,62 @@ If you use GPU inference, please make sure your CUDA / PyTorch installation is c
 The main testing entry is:
 
 ```bash
-python backbone/inference_by_csv.py -h
+python backbone/inference.py -h
 ```
 
-### Input CSV
+### Preprocessing Requirement
 
-The inference script reads cases from a CSV file. The CSV should contain at least the following columns:
+Before running SingleBrainSeg, the input T1-weighted MRI should be preprocessed as follows:
 
-| Column | Description |
-| --- | --- |
-| `Site` | Site or dataset name. |
-| `SubjectID` | Subject identifier. |
-| `Session` | Session identifier. |
-| `process` | Path to the preprocessed subject folder. |
+- N4 bias field correction using ANTs.
+- Skull stripping using SynthStrip.
+- Rigid registration to the template using ANTs.
 
-For each row, the script will look for the input image under:
-
-```text
-<process>/step_1_T1w_process_ANTs-2.4.0_synthmorph/T1w2MNI_RigidWarped.nii.gz
-```
-
-If this file is not found, it will try:
-
-```text
-<process>/step_1_T1w_process_ANTs-2.4.0/T1w2MNI_RigidWarped.nii.gz
-```
+The inference input should be the preprocessed image in the template-aligned space.
 
 ### Run Inference
 
-Example command:
+Minimal example:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 \
-python backbone/inference_by_csv.py \
-  --args_json path/to/args.json \
-  --input_csv path/to/test.csv \
-  --output_folder outputs/test_predictions \
-  --checkpoint path/to/test_weight.pth \
-  --gpu 0 \
-  --target_spacing 1 1 1
-```
-
-Optional post-processing:
-
-```bash
-CUDA_VISIBLE_DEVICES=0 \
-python backbone/inference_by_csv.py \
-  --args_json path/to/args.json \
-  --input_csv path/to/test.csv \
-  --output_folder outputs/test_predictions \
-  --checkpoint path/to/test_weight.pth \
+python backbone/inference.py \
+  --dataset_json path/to/dataset.json \
+  --lookuptable_csv path/to/Brain_lookuptable.csv \
+  --checkpoint /absolute/path/to/checkpoint.pth \
+  --image path/to/preprocessed_T1w.nii.gz \
+  --out outputs/segmentation.nii.gz \
   --gpu 0 \
   --target_spacing 1 1 1 \
   --post
 ```
 
-The output will be saved as:
+For infant or high-resolution data, use the corresponding target spacing, for example:
 
-```text
-<output_folder>/<Site>/<SubjectID>/<Session>/<Site>_<SubjectID>_<Session>_SingleBrainSeg.nii.gz
+```bash
+CUDA_VISIBLE_DEVICES=0 \
+python backbone/inference.py \
+  --dataset_json path/to/dataset.json \
+  --lookuptable_csv path/to/Brain_lookuptable.csv \
+  --checkpoint /absolute/path/to/checkpoint.pth \
+  --image path/to/preprocessed_T1w.nii.gz \
+  --out outputs/segmentation.nii.gz \
+  --gpu 0 \
+  --target_spacing 0.5 0.5 0.5 \
+  --post
 ```
 
-If `--post` is enabled, the output will be:
+Key arguments:
 
-```text
-<output_folder>/<Site>/<SubjectID>/<Session>/<Site>_<SubjectID>_<Session>_SingleBrainSeg_post.nii.gz
-```
+| Argument | Description |
+| --- | --- |
+| `--dataset_json` | Dataset label definition file. |
+| `--lookuptable_csv` | Look-up table used for left/right label pairs and post-processing. |
+| `--checkpoint` | Absolute path to the model checkpoint. |
+| `--image` | Preprocessed input image. |
+| `--out` | Output segmentation path. |
+| `--target_spacing` | Inference spacing. Use `1 1 1` for standard adult data and `0.5 0.5 0.5` for high-resolution infant-style data. |
+| `--post` | Enable connected-component post-processing. |
 
 ## Repository Structure
 
