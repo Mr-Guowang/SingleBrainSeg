@@ -17,15 +17,6 @@ This release provides the testing/inference code and test weights. The complete 
 
 We are still polishing the repository for public use, so the interface may be updated over time. Please check this page for future updates.
 
-## Download Test Weights
-
-The test weights and shared files are available via **Baidu Netdisk**:
-
-- **Download link:** [Baidu Netdisk](https://pan.baidu.com/s/1FDvIuLA0eJ1rGxUB9B1YSA?pwd=g7yu)
-- **Extraction code:** `g7yu`
-
-After downloading, specify the absolute path to the model checkpoint using the `--checkpoint` argument in the inference command below.
-
 ## Installation
 
 Clone this repository and install the Python dependencies:
@@ -58,6 +49,15 @@ Before running SingleBrainSeg, the input T1-weighted MRI should be preprocessed 
 - Rigid registration to the template using ANTs.
 
 The inference input should be the preprocessed image in the template-aligned space.
+
+## Download Test Weights
+
+The test weights and shared files are available via **Baidu Netdisk**:
+
+- **Download link:** [Baidu Netdisk](https://pan.baidu.com/s/1FDvIuLA0eJ1rGxUB9B1YSA?pwd=g7yu)
+- **Extraction code:** `g7yu`
+
+After downloading, specify the absolute path to the model checkpoint using the `--checkpoint` argument in the inference command below.
 
 ### Run Inference
 
