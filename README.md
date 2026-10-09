@@ -96,7 +96,7 @@ Key arguments:
 | Argument | Description |
 | --- | --- |
 | `--dataset_json` | Dataset label definition file. |
-| `--lookuptable_csv` | Look-up table used for left/right label pairs and post-processing. |
+| `--lookuptable_csv` | Look-up table used for post-processing. |
 | `--checkpoint` | Absolute path to the model checkpoint. |
 | `--image` | Preprocessed input image. |
 | `--out` | Output segmentation path. |
