@@ -103,17 +103,6 @@ Key arguments:
 | `--target_spacing` | Inference spacing. Use `1 1 1` for standard adult data and `0.5 0.5 0.5` for high-resolution infant-style data. |
 | `--post` | Enable connected-component post-processing. |
 
-## Repository Structure
-
-```text
-Brainseg_github/
-├── backbone/             # network, inference, training scaffold, data utilities
-├── lookuptable/          # label configuration
-├── nnunetv2/             # minimal nnU-Net dependencies used by this project
-├── requirements.txt
-└── README.md
-```
-
 ## Training Code
 
 The complete training pipeline is being cleaned and documented. We will release the full training code after the paper is accepted.
