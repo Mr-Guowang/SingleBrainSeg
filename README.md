@@ -97,7 +97,6 @@ python backbone/inference.py \
 ```text
 Brainseg_github/
 ├── backbone/             # network, inference, training scaffold, data utilities
-├── lookuptable/          # label configuration
 ├── nnunetv2/             # minimal nnU-Net dependencies used by this project
 ├── online_iteration/     # Bayesian confidence and online pseudo-label update utilities
 ├── requirements.txt
