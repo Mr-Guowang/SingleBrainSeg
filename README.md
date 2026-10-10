@@ -199,39 +199,6 @@ For neonatal or high-resolution MRI data, modify the corresponding spacing param
 
 ---
 
-## 📝 Release Notes
-
-SingleBrainSeg is under active development and will be continuously maintained.
-
-We are working to improve:
-
-- 🧠 **Labeling Protocols** — Support additional anatomical labeling systems and customized segmentation tasks.
-- 🔬 **MRI Modalities** — Extend compatibility with different MRI modalities and acquisition protocols.
-- 📦 **Pretrained Models** — Expand the availability of pretrained weights for diverse applications.
-- 🛠️ **Code & Documentation** — Improve reproducibility, usability, and example workflows.
-
-Our long-term goal is to provide a flexible and accessible framework for **customizing brain segmentation models with minimal annotation effort**.
-
-### 💬 Questions & Feedback
-
-We will continue to maintain and improve SingleBrainSeg.
-
-If you encounter any problems, have questions about the code, or would like to suggest new features, please feel free to **[open an issue](https://github.com/Mr-Guowang/SingleBrainSeg/issues)**.
-
-We welcome your feedback, suggestions, and contributions!
-
----
-
-## 🤝 Collaboration
-
-**We warmly welcome collaborations with researchers and developers in the neuroimaging community!**
-
-If you are interested in adapting SingleBrainSeg to a new anatomical labeling protocol, MRI modality, or customized segmentation task, we would be happy to explore potential collaborations.
-
-We hope to work together with the community to expand support for diverse labeling protocols and contribute useful resources to brain image analysis research.
-
----
-
 ## 📚 Citation
 
 If you find SingleBrainSeg useful in your research, please consider citing our work.
