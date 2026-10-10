@@ -45,9 +45,9 @@ We are continuously improving SingleBrainSeg and expanding its functionality. St
 
 | Date | Update |
 |:---:|---|
-| **2026-10-11** | 🚀 Released the training code for SingleBrainSeg. |
-| **2026-10-10** | 🧠 Released the inference pipeline and pretrained model weights. You can now test SingleBrainSeg on our example data or your own MRI scans. |
-| **2026-10-09** | 🎉 Initial release of the SingleBrainSeg GitHub repository. |
+| **2026-10-11** |  Released the training code for SingleBrainSeg. |
+| **2026-10-10** |  Released the inference pipeline and pretrained model weights. You can now test SingleBrainSeg on our example data or your own MRI scans. |
+| **2026-10-09** |  Initial release of the SingleBrainSeg GitHub repository. |
 
 ---
 
@@ -144,22 +144,6 @@ For additional inference options, run:
 python backbone/inference.py --help
 ```
 
----
-
-## 📂 Repository Structure
-
-The main components of SingleBrainSeg are organized as follows:
-
-```text
-SingleBrainSeg/
-├── backbone/               # Network architecture, inference, training, and data utilities
-├── nnunetv2/                # nnU-Net components used by SingleBrainSeg
-├── online_iteration/       # Bayesian confidence estimation and pseudo-label updates
-├── requirements.txt        # Python dependencies
-└── README.md               # Project documentation
-```
-
----
 
 ## 🏋️ Training
 
@@ -174,13 +158,6 @@ The default training procedure consists of two stages:
 Establish an initial segmentation model using supervised training with the available annotation and augmented image–label pairs.
 
 **Stage 2: Semi-Supervised Optimization (300 epochs)**
-
-Jointly optimize the segmentation model through:
-
-- **Supervised Learning** — Maintain reliable supervision from labeled data.
-- **Bayesian Pseudo-Label Learning** — Leverage unlabeled data through confidence-guided pseudo-label supervision.
-- **Protocol-Adaptive Regularization** — Introduce complementary anatomical guidance from a protocol-adapted teacher.
-- **Feature Distillation** — Improve student learning through teacher–student feature alignment.
 
 By default, Bayesian pseudo-labels and their confidence estimates are refreshed every **10 epochs**.
 
