@@ -94,7 +94,7 @@ The current framework supports adult T1-weighted MRI and neonatal T2-weighted MR
 
 ### 📦 Step 2. Download Pretrained Model Weights
 
-Pretrained checkpoints and shared resources are available through **Baidu Netdisk**:
+Pretrained checkpoints and shared resources are available through **Baidu Netdisk** , Currently supports three labeling protocols: Freesurfer, MALC12, and M-CRIB:
 
 - 🔗 **Download:** [SingleBrainSeg Model Weights](https://pan.baidu.com/s/1FDvIuLA0eJ1rGxUB9B1YSA?pwd=g7yu)
 - 🔑 **Extraction Code:** `g7yu`
