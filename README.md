@@ -92,18 +92,6 @@ python backbone/inference.py \
   --post
 ```
 
-Key arguments:
-
-| Argument | Description |
-| --- | --- |
-| `--dataset_json` | Dataset label definition file. |
-| `--lookuptable_csv` | Look-up table used for left/right label pairs and post-processing. |
-| `--checkpoint` | Absolute path to the model checkpoint. |
-| `--image` | Preprocessed input image. |
-| `--out` | Output segmentation path. |
-| `--target_spacing` | Inference spacing. Use `1 1 1` for standard adult data and `0.5 0.5 0.5` for high-resolution infant-style data. |
-| `--post` | Enable connected-component post-processing. |
-
 ## Repository Structure
 
 ```text
