@@ -1,43 +1,32 @@
-
 # SingleBrainSeg
 
 ### One Annotation. Your Protocol. Your Brain Segmenter.
 
-**SingleBrainSeg** is a label-efficient framework for building **customized 3D brain MRI segmentation models from a single annotated subject**.
+**SingleBrainSeg** is a label-efficient framework for building **customized 3D brain MRI segmentation models from a single annotated subject**, leveraging unlabeled data to minimize manual annotation requirements.
 
-By leveraging unlabeled images, SingleBrainSeg enables adaptation to different anatomical labeling protocols without requiring extensive manual annotations.
-
-Our goal is to make protocol-specific brain segmentation **more accessible, flexible, and practical** for the neuroimaging community.
+Our goal is to make protocol-specific brain segmentation more accessible and flexible for the neuroimaging community.
 
 ## 🧠 Supported Labeling Protocols
 
-The current release supports inference under three anatomical labeling protocols:
+Currently, SingleBrainSeg supports three anatomical labeling protocols:
 
 - **FreeSurfer** — Adult whole-brain segmentation
-- **MALC12** — Multi-atlas brain labeling protocol
+- **MALC12** — Multi-atlas brain labeling
 - **M-CRIB** — Neonatal brain segmentation
 
 ## 🚀 Ongoing Development
 
-**SingleBrainSeg is an actively evolving research project.**
+We are actively maintaining SingleBrainSeg and expanding support for **more labeling protocols, MRI modalities, and pretrained models**, aiming to contribute useful resources to the neuroimaging community.
 
-We are continuously exploring additional anatomical labeling protocols, MRI modalities, and pretrained models.
+Questions, suggestions, and feedback are always welcome! Please feel free to [open an issue](https://github.com/Mr-Guowang/SingleBrainSeg/issues).
 
-Through these efforts, we hope to expand the applicability of SingleBrainSeg and contribute reusable resources to the broader neuroimaging community.
+## 🤝 Collaboration
 
-We will continue to maintain and improve SingleBrainSeg. If you have any questions, encounter issues, or have suggestions, please feel free to open an issue on GitHub. We welcome your feedback and contributions!
+**We welcome collaborations!**
 
-## 🤝 Collaboration & Community
+If you are interested in adapting SingleBrainSeg to your own labeling protocol, MRI modality, or dataset, we would be happy to collaborate.
 
-**We warmly welcome collaborations and contributions!**
-
-If you are working with a customized anatomical labeling protocol, a different MRI modality, or a dataset that could benefit from SingleBrainSeg, we would be delighted to explore potential collaborations.
-
-Feel free to open an issue or reach out to us.
-
-**Let's work together to make brain segmentation more accessible across diverse research applications!**
-
-
+**Let's make brain segmentation more accessible together!**
 
 ## 📢 Latest Updates
 
