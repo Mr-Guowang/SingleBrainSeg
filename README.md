@@ -1,8 +1,8 @@
 # SingleBrainSeg
 
-SingleBrainSeg is a brain MRI segmentation framework designed for robust anatomical segmentation with pseudo-label refinement and structural subspace guidance.
+SingleBrainSeg is an open-source framework for customizing brain segmentation models from a single annotated dataset. It enables users to adapt the segmentation model to new imaging modalities and labeling protocols with minimal supervision.
 
-This repository is under active maintenance. We will continue to update the code, documentation, pretrained weights, and examples.
+This repository is under active maintenance. Currently, the inference pipeline supports three labeling protocols: FreeSurfer, MALC12, and MCRIB. We are actively extending SingleBrainSeg to support more modalities, labeling protocols, and pretrained weights. If you are interested in applying it to a specific modality or protocol, we would be very happy to collaborate.
 
 ## Latest Updates
 
