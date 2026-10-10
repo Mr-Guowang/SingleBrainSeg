@@ -1,10 +1,42 @@
+
 # SingleBrainSeg
 
-SingleBrainSeg is an open-source framework for customizing brain segmentation models from a single annotated dataset. 
+### One Annotation. Your Protocol. Your Brain Segmenter.
 
-This repository is under active maintenance. Currently, the inference pipeline supports three labeling protocols: FreeSurfer, MALC12, and MCRIB. We are actively extending SingleBrainSeg to support more modalities, labeling protocols, and pretrained weights.
+**SingleBrainSeg** is a label-efficient framework for building **customized 3D brain MRI segmentation models from a single annotated subject**.
 
-If you are interested in applying it to a specific modality or protocol, we would be very happy to collaborate!
+By leveraging unlabeled images, SingleBrainSeg enables adaptation to different anatomical labeling protocols without requiring extensive manual annotations.
+
+Our goal is to make protocol-specific brain segmentation **more accessible, flexible, and practical** for the neuroimaging community.
+
+## 🧠 Supported Labeling Protocols
+
+The current release supports inference under three anatomical labeling protocols:
+
+- **FreeSurfer** — Adult whole-brain segmentation
+- **MALC12** — Multi-atlas brain labeling protocol
+- **M-CRIB** — Neonatal brain segmentation
+
+## 🚀 Ongoing Development
+
+**SingleBrainSeg is an actively evolving research project.**
+
+We are continuously exploring additional anatomical labeling protocols, MRI modalities, and pretrained models.
+
+Through these efforts, we hope to expand the applicability of SingleBrainSeg and contribute reusable resources to the broader neuroimaging community.
+
+**Code Availability:** The current repository provides inference code and pretrained model weights. The complete training code will be released upon acceptance of our manuscript.
+
+## 🤝 Collaboration & Community
+
+**We warmly welcome collaborations and contributions!**
+
+If you are working with a customized anatomical labeling protocol, a different MRI modality, or a dataset that could benefit from SingleBrainSeg, we would be delighted to explore potential collaborations.
+
+Feel free to open an issue or reach out to us.
+
+**Let's work together to make brain segmentation more accessible across diverse research applications!**
+
 
 ## Latest Updates
 
