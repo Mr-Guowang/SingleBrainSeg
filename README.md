@@ -139,9 +139,7 @@ python backbone/training_paper.py \
   --taskcode example_training \
   --dataset_json path/to/dataset.json \
   --num_classes 36 \
-  --synth_pretrained /absolute/path/to/initial_pretrained_checkpoint.pth \
   --simulatedir /path/to/supervised_processed_data \
-  --weakdir /path/to/initial_weak_processed_data \
   --confidence_iter_input_csv /path/to/training_subjects.csv \
   --confidence_iter_output_root /path/to/online_iteration_output \
   --confidence_iter_tissue_csv /path/to/subspace_table.csv \
@@ -161,23 +159,6 @@ For infant or high-resolution data, use:
 ```bash
 --confidence_iter_target_spacing 0.5 0.5 0.5
 ```
-
-Key training arguments:
-
-| Argument | Description |
-| --- | --- |
-| `--synth_pretrained` | Initial checkpoint used to initialize the model. |
-| `--simulatedir` | Fully supervised processed data used in warm-up and joint training. |
-| `--weakdir` | Initial weak/pseudo-label processed data. |
-| `--confidence_iter_input_csv` | Subject table used during online pseudo-label refresh. |
-| `--confidence_iter_output_root` | Directory where online pseudo-labels, confidence maps, and iterative synth labels are saved. |
-| `--confidence_iter_tissue_csv` | Tissue grouping table for Bayesian confidence estimation. |
-| `--confidence_iter_prior_dir` | Initial prior/confidence directory used to locate prepared subspace resources. |
-| `--left_right_pairs_csv` | Look-up table for left/right label pairs. |
-| `--warmup_epochs` | Number of supervised warm-up epochs. |
-| `--num_epochs` | Total number of epochs. |
-| `--confidence_iter_interval` | Bayesian pseudo-label refresh interval. |
-
 ## Citation
 
 If you find this project useful, please consider citing our work. The citation entry will be updated after the paper is accepted.
