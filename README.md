@@ -12,21 +12,6 @@ This repository is under active maintenance. We will continue to update the code
 | 2026-10-10 | Update the testing code and test weights. Now you can try on the test data / your own data. |
 | 2026-10-09 | Initial GitHub release with Python code. |
 
-## Notice
-
-This release provides the testing/inference code, test weights, and training code.
-
-We are still polishing the repository for public use. The code, documentation, pretrained weights, and examples will be continuously updated.
-
-## Download Test Weights
-
-The test weights and shared files are available via **Baidu Netdisk**:
-
-- **Download link:** [Baidu Netdisk](https://pan.baidu.com/s/1FDvIuLA0eJ1rGxUB9B1YSA?pwd=g7yu)
-- **Extraction code:** `g7yu`
-
-After downloading, specify the absolute path to the model checkpoint using the `--checkpoint` argument in the inference command below.
-
 ## Installation
 
 Clone this repository and install the Python dependencies:
@@ -60,6 +45,21 @@ Before running SingleBrainSeg, the input T1-weighted MRI should be preprocessed 
 
 The inference input should be the preprocessed image in the template-aligned space.
 
+## Notice
+
+This release provides the testing/inference code, test weights, and training code.
+
+We are still polishing the repository for public use. The code, documentation, pretrained weights, and examples will be continuously updated.
+
+## Download Test Weights
+
+The test weights and shared files are available via **Baidu Netdisk**:
+
+- **Download link:** [Baidu Netdisk](https://pan.baidu.com/s/1FDvIuLA0eJ1rGxUB9B1YSA?pwd=g7yu)
+- **Extraction code:** `g7yu`
+
+After downloading, specify the absolute path to the model checkpoint using the `--checkpoint` argument in the inference command below.
+
 ### Run Inference
 
 Minimal example:
@@ -92,18 +92,6 @@ python backbone/inference.py \
   --post
 ```
 
-Key arguments:
-
-| Argument | Description |
-| --- | --- |
-| `--dataset_json` | Dataset label definition file. |
-| `--lookuptable_csv` | Look-up table used for left/right label pairs and post-processing. |
-| `--checkpoint` | Absolute path to the model checkpoint. |
-| `--image` | Preprocessed input image. |
-| `--out` | Output segmentation path. |
-| `--target_spacing` | Inference spacing. Use `1 1 1` for standard adult data and `0.5 0.5 0.5` for high-resolution infant-style data. |
-| `--post` | Enable connected-component post-processing. |
-
 ## Repository Structure
 
 ```text
@@ -135,16 +123,10 @@ Example command:
 ```bash
 CUDA_VISIBLE_DEVICES=0 \
 python backbone/training_paper.py \
-  --modelverson paper \
+  --modelverson test \
   --taskcode example_training \
   --dataset_json path/to/dataset.json \
   --num_classes 36 \
-  --synth_pretrained /absolute/path/to/initial_pretrained_checkpoint.pth \
-  --simulatedir /path/to/supervised_processed_data \
-  --confidence_iter_input_csv /path/to/training_subjects.csv \
-  --confidence_iter_output_root /path/to/online_iteration_output \
-  --confidence_iter_tissue_csv /path/to/subspace_table.csv \
-  --confidence_iter_prior_dir /path/to/initial_confidence_or_prior_dir \
   --left_right_pairs_csv /path/to/Brain_lookuptable.csv \
   --confidence_iter_gpu 0 \
   --confidence_iter_target_spacing 1 1 1 \
@@ -160,22 +142,6 @@ For infant or high-resolution data, use:
 ```bash
 --confidence_iter_target_spacing 0.5 0.5 0.5
 ```
-
-Key training arguments:
-
-| Argument | Description |
-| --- | --- |
-| `--synth_pretrained` | Initial checkpoint used to initialize the model. |
-| `--simulatedir` | Fully supervised processed data used in warm-up and joint training. |
-| `--confidence_iter_input_csv` | Subject table used during online pseudo-label refresh. |
-| `--confidence_iter_output_root` | Directory where online pseudo-labels, confidence maps, and iterative synth labels are saved. |
-| `--confidence_iter_tissue_csv` | Tissue grouping table for Bayesian confidence estimation. |
-| `--confidence_iter_prior_dir` | Initial prior/confidence directory used to locate prepared subspace resources. |
-| `--left_right_pairs_csv` | Look-up table for left/right label pairs. |
-| `--warmup_epochs` | Number of supervised warm-up epochs. |
-| `--num_epochs` | Total number of epochs. |
-| `--confidence_iter_interval` | Bayesian pseudo-label refresh interval. |
-
 ## Citation
 
 If you find this project useful, please consider citing our work. The citation entry will be updated after the paper is accepted.
