@@ -183,3 +183,79 @@ def get_data_loader(
         wait_time=0.002,
     )
     return weak_mt, simulate_mt
+
+
+def get_simulate_loader(
+    simulate_dir: str,
+    dataset_json: str,
+    patch_size: Tuple[int, int, int],
+    batch_size: int,
+    oversample_foreground_percent: float = 0.33,
+    deep_supervision: bool = False,
+    pool_op_kernel_sizes=DEFAULT_POOL_OP_KERNEL_SIZES,
+    num_processes_da: int | None = None,
+    pin_memory: bool = False,
+    intensity_channels=(0,),
+    left_right_pairs=None,
+    left_right_pairs_csv: str | None = None,
+):
+    dataset_info = load_dataset_json(dataset_json)
+    label_manager = build_label_manager(dataset_info)
+    transforms, initial_patch_size = build_nnunet_train_transform(
+        patch_size,
+        pool_op_kernel_sizes,
+        deep_supervision,
+        label_manager,
+        intensity_channels=intensity_channels,
+        left_right_pairs=left_right_pairs,
+        left_right_pairs_csv=left_right_pairs_csv,
+    )
+
+    simulate_is_fast = is_preprocessed_dataset(simulate_dir)
+    if simulate_is_fast:
+        simulate_meta = load_preprocessed_dataset_metadata(simulate_dir)
+        simulate_dataset = PreprocessedPatchDataset(
+            discover_preprocessed_cases(simulate_dir),
+            labels=label_manager.all_labels,
+            ignore_label=label_manager.ignore_label,
+            data_channels=simulate_meta.get("data_channels"),
+            confidence_channel=simulate_meta.get("confidence_channel"),
+        )
+    else:
+        simulate_dataset = NiftiPatchDataset(
+            discover_simulate_cases(simulate_dir),
+            labels=label_manager.all_labels,
+            ignore_label=label_manager.ignore_label,
+            normalize=True,
+        )
+
+    simulate_loader = SynWeakDataLoader(
+        simulate_dataset,
+        batch_size,
+        initial_patch_size,
+        patch_size,
+        label_manager,
+        oversample_foreground_percent=oversample_foreground_percent,
+        transforms=transforms,
+    )
+    if num_processes_da is None:
+        num_processes_da = get_allowed_n_proc_DA()
+    num_processes_da = int(num_processes_da)
+    print(
+        f"[dataloader] simulate_only=True, simulate_fast={simulate_is_fast}, "
+        f"initial_patch_size={tuple(int(i) for i in initial_patch_size)}, final_patch_size={tuple(int(i) for i in patch_size)}, "
+        f"num_processes_da={num_processes_da}, pin_memory={pin_memory}"
+    )
+    if num_processes_da <= 0:
+        return infinite_loader(simulate_loader)
+
+    simulate_processes = max(1, num_processes_da)
+    return NonDetMultiThreadedAugmenter(
+        data_loader=simulate_loader,
+        transform=None,
+        num_processes=simulate_processes,
+        num_cached=max(3, simulate_processes // 2),
+        seeds=None,
+        pin_memory=pin_memory,
+        wait_time=0.002,
+    )

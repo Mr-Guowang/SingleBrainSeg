@@ -51,7 +51,7 @@ def parse_args():
     parser.add_argument("--taskcode", type=str, default="paper_training")
     parser.add_argument("--dataset_json", type=str, default=str(DEFAULT_DATASET_JSON))
     parser.add_argument("--simulatedir", type=str, required=True, help="Fully supervised simulation/augmentation data for warmup and joint training.")
-    parser.add_argument("--weakdir", type=str, required=True, help="Initial pseudo-label training data directory.")
+    parser.add_argument("--weakdir", type=str, default=None, help="Optional initial pseudo-label directory. If omitted, pseudo labels are generated after supervised warm-up.")
     parser.add_argument("--synthpath", type=str, default="", help="Initial synthetic label source. After each Bayesian refresh this is replaced by output_root/iter_synth.")
 
     # Model

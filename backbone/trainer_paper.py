@@ -3,12 +3,13 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+from pathlib import Path
 from time import time
 
 import numpy as np
 import torch
 
-from .get_data_loader import DEFAULT_POOL_OP_KERNEL_SIZES, get_data_loader
+from .get_data_loader import DEFAULT_POOL_OP_KERNEL_SIZES, get_data_loader, get_simulate_loader
 from .trainer import (
     SynWeakNNTrainer,
     as_feature_list,
@@ -42,7 +43,7 @@ class PaperTrainer(SynWeakNNTrainer):
         super().__init__(dataset, output_path, dataset_json, device, config)
         self.warmup_epochs = max(0, int(getattr(config, "warmup_epochs", 100)))
         self.confidence_iter_interval = int(getattr(config, "confidence_iter_interval", 10) or 0)
-        self.active_weakdir = getattr(config, "weakdir")
+        self.active_weakdir = getattr(config, "weakdir", None)
         self.enable_ema = bool(getattr(config, "enable_ema", True))
         self.ema_decay = float(getattr(config, "ema_decay", self.ema_decay))
         self.confidence_iter_use_ema = True
@@ -72,6 +73,11 @@ class PaperTrainer(SynWeakNNTrainer):
         return int(epoch) < self.warmup_epochs
 
     def build_loaders(self, num_processes_da=None, pin_memory=None):
+        if not self.active_weakdir:
+            raise RuntimeError(
+                "Weak loader requested before pseudo labels were generated. "
+                "This should only happen after the initial confidence iteration."
+            )
         return get_data_loader(
             self.active_weakdir,
             self.config.simulatedir,
@@ -85,6 +91,21 @@ class PaperTrainer(SynWeakNNTrainer):
             pin_memory=(self.device.type == "cuda") if pin_memory is None else pin_memory,
             intensity_channels=getattr(self.config, "intensity_channels", [0]),
             load_weak_confidence=self.confidence_weight,
+            left_right_pairs_csv=getattr(self.config, "left_right_pairs_csv", None),
+        )
+
+    def build_simulate_loader(self, num_processes_da=None, pin_memory=None):
+        return get_simulate_loader(
+            self.config.simulatedir,
+            self.dataset_json_path,
+            tuple(self.config.patch_size),
+            self.config.batch_size,
+            oversample_foreground_percent=self.oversample_foreground_percent,
+            deep_supervision=getattr(self.config, "deep_supervision", False),
+            pool_op_kernel_sizes=getattr(self.config, "pool_op_kernel_sizes", DEFAULT_POOL_OP_KERNEL_SIZES),
+            num_processes_da=getattr(self.config, "num_processes_da", None) if num_processes_da is None else num_processes_da,
+            pin_memory=(self.device.type == "cuda") if pin_memory is None else pin_memory,
+            intensity_channels=getattr(self.config, "intensity_channels", [0]),
             left_right_pairs_csv=getattr(self.config, "left_right_pairs_csv", None),
         )
 
@@ -264,7 +285,8 @@ class PaperTrainer(SynWeakNNTrainer):
     def run_training(self):
         self.initialize()
         self.reset_optimizer_and_scheduler(self.initial_lr, self.num_epochs, 0)
-        self.weakloader, self.simulateloader = self.build_loaders()
+        self.weakloader = None
+        self.simulateloader = self.build_simulate_loader()
 
         self.print_to_log_file(
             "[paper] schedule: "
@@ -309,7 +331,10 @@ class PaperTrainer(SynWeakNNTrainer):
                     self.print_to_log_file(
                         "[dataloader] background workers failed; falling back to single-process loader. Error:", msg
                     )
-                    self.weakloader, self.simulateloader = self.build_loaders(num_processes_da=0, pin_memory=False)
+                    if self.is_supervised_warmup_epoch(epoch):
+                        self.simulateloader = self.build_simulate_loader(num_processes_da=0, pin_memory=False)
+                    else:
+                        self.weakloader, self.simulateloader = self.build_loaders(num_processes_da=0, pin_memory=False)
                     out = self.train_supervised_batch() if self.is_supervised_warmup_epoch(epoch) else self.train_joint_batch()
                     if self.enable_ema:
                         self.update_ema_real()

@@ -41,6 +41,15 @@ def get_left_right_label_pairs_from_config(cfg: dict):
     return tuple((int(left), int(right)) for left, right in pairs)
 
 
+def get_left_right_label_pairs(lookuptable_csv: str | None = None, cfg: dict | None = None):
+    pairs = infer_left_right_pairs_from_csv(lookuptable_csv)
+    if pairs is None and cfg is not None:
+        pairs = infer_left_right_pairs_from_csv(cfg.get("left_right_pairs_csv", None))
+    if pairs is None:
+        pairs = DEFAULT_LEFT_RIGHT_LABEL_PAIRS
+    return tuple((int(left), int(right)) for left, right in pairs)
+
+
 def swap_left_right_logits(logits: torch.Tensor, pairs=LEFT_RIGHT_LABEL_PAIRS) -> torch.Tensor:
     """Swap left/right class channels in channel-first logits [C, X, Y, Z]."""
     out = logits.clone()
@@ -133,12 +142,18 @@ def sliding_window_predict(
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Single-case GG-BondNet inference.")
-    parser.add_argument("--args_json", type=str, required=True)
+    parser = argparse.ArgumentParser(description="Single-case SingleBrainSeg inference.")
+    parser.add_argument("--dataset_json", type=str, default=None, help="Dataset json with labels/channel_names. New preferred interface.")
+    parser.add_argument("--lookuptable_csv", type=str, default=None, help="Lookuptable CSV used for left-right TTA and post-processing.")
+    parser.add_argument("--args_json", type=str, default=None, help="Deprecated compatibility option. If provided, missing settings are read from this file.")
     parser.add_argument("--image", type=str, required=True, help="Input 3D/4D NIfTI image.")
     parser.add_argument("--out", type=str, default=None, help="Output segmentation NIfTI path.")
     parser.add_argument("--output_folder", type=str, default=None, help="Alternative to --out; saves {image_stem}_pred.nii.gz here.")
-    parser.add_argument("--checkpoint", type=str, required=True, help="Checkpoint path, or filename relative to args_json output_path.")
+    parser.add_argument("--checkpoint", type=str, required=True, help="Absolute checkpoint path. Relative paths are only supported with legacy --args_json/output_path.")
+    parser.add_argument("--modelname", type=str, default=None, help="Model architecture. Default: Triad_UNet.")
+    parser.add_argument("--patch_size", type=int, nargs=3, default=None, help="Sliding-window patch size. Default: 128 128 128.")
+    parser.add_argument("--in_channels", type=int, default=None, help="Input channels. Default: inferred from dataset_json channel_names, otherwise 1.")
+    parser.add_argument("--num_classes", type=int, default=None, help="Number of output classes. Default: inferred from dataset_json labels.")
     parser.add_argument("--gpu", type=str, default="0")
     parser.add_argument("--device", type=str, choices=["cuda", "cpu"], default="cuda")
     parser.add_argument("--tile_step_size", type=float, default=0.5)
@@ -167,8 +182,74 @@ def resolve_output_path(args) -> Path:
 
 
 def load_config(args_json: str) -> dict:
+    if args_json is None:
+        return {}
     with open(args_json, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_dataset_json(dataset_json: str | None) -> dict:
+    if dataset_json is None:
+        return {}
+    with open(dataset_json, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def infer_in_channels(dataset_info: dict, cfg: dict) -> int:
+    if "in_channels" in cfg:
+        return int(cfg["in_channels"])
+    channel_names = dataset_info.get("channel_names", None) or dataset_info.get("modality", None)
+    if isinstance(channel_names, dict) and len(channel_names) > 0:
+        return len(channel_names)
+    return 1
+
+
+def _flatten_label_values(value):
+    if isinstance(value, (list, tuple)):
+        out = []
+        for item in value:
+            out.extend(_flatten_label_values(item))
+        return out
+    return [int(value)]
+
+
+def infer_num_classes(dataset_info: dict, cfg: dict) -> int:
+    if "num_classes" in cfg:
+        return int(cfg["num_classes"])
+    labels = dataset_info.get("labels", None)
+    if not isinstance(labels, dict) or len(labels) == 0:
+        return 36
+    values = []
+    for key, value in labels.items():
+        if str(key).lower() == "ignore":
+            continue
+        values.extend(_flatten_label_values(value))
+    if not values:
+        return 36
+    return max(values) + 1
+
+
+def build_inference_config(args) -> dict:
+    cfg = load_config(args.args_json)
+    dataset_info = load_dataset_json(args.dataset_json or cfg.get("dataset_json", None))
+
+    modelname = args.modelname or cfg.get("modelname", "Triad_UNet")
+    in_channels = int(args.in_channels) if args.in_channels is not None else infer_in_channels(dataset_info, cfg)
+    num_classes = int(args.num_classes) if args.num_classes is not None else infer_num_classes(dataset_info, cfg)
+    patch_size = (
+        tuple(int(i) for i in args.patch_size)
+        if args.patch_size is not None
+        else tuple(int(i) for i in cfg.get("patch_size", [128, 128, 128]))
+    )
+    return {
+        **cfg,
+        "dataset_json": args.dataset_json or cfg.get("dataset_json", None),
+        "lookuptable_csv": args.lookuptable_csv or cfg.get("left_right_pairs_csv", None),
+        "modelname": modelname,
+        "in_channels": in_channels,
+        "num_classes": num_classes,
+        "patch_size": patch_size,
+    }
 
 
 def unwrap_checkpoint_state(checkpoint):
@@ -211,7 +292,12 @@ def resolve_checkpoint_path(checkpoint: str, cfg: dict) -> str:
         candidate = Path(output_path) / checkpoint
         if candidate.exists():
             return str(candidate)
-    return str(ckpt)
+    if ckpt.exists():
+        return str(ckpt)
+    raise FileNotFoundError(
+        f"Checkpoint not found: {checkpoint}. "
+        "Please pass an absolute checkpoint path, or use legacy --args_json with output_path."
+    )
 
 
 def normalize_image(data: np.ndarray, mode: str) -> np.ndarray:
@@ -299,13 +385,16 @@ def main():
     from backbone.post_process import post_process_segmentation_array
 
     add_project_paths()
-    cfg = load_config(args.args_json)
+    cfg = build_inference_config(args)
 
-    modelname = cfg.get("modelname", "Triad_UNet")
-    in_channels = int(cfg.get("in_channels", 1))
-    num_classes = int(cfg.get("num_classes", 36))
-    patch_size = tuple(int(i) for i in cfg.get("patch_size", [128, 128, 128]))
-    left_right_label_pairs = get_left_right_label_pairs_from_config(cfg)
+    modelname = cfg["modelname"]
+    in_channels = int(cfg["in_channels"])
+    num_classes = int(cfg["num_classes"])
+    patch_size = tuple(int(i) for i in cfg["patch_size"])
+    lookuptable_csv = args.lookuptable_csv or cfg.get("lookuptable_csv", None)
+    left_right_label_pairs = get_left_right_label_pairs(lookuptable_csv, cfg)
+    if args.post and (lookuptable_csv is None or str(lookuptable_csv).strip() == ""):
+        raise ValueError("--post requires --lookuptable_csv in the new inference interface.")
 
     device = torch.device("cuda", 0) if args.device == "cuda" and torch.cuda.is_available() else torch.device("cpu")
     torch.set_num_threads(1)
@@ -328,6 +417,8 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(f"[model] {modelname}, in_channels={in_channels}, num_classes={num_classes}, patch_size={patch_size}")
+    print(f"[dataset_json] {cfg.get('dataset_json')}")
+    print(f"[lookuptable] {lookuptable_csv}")
     print(f"[tta] left_right_label_pairs={left_right_label_pairs}")
     print(f"[checkpoint] loaded {checkpoint_path}; missing={len(missing)}, unexpected={len(unexpected)}")
     if missing:
@@ -363,7 +454,7 @@ def main():
     )
     pred = torch.argmax(logits, dim=0)
     if args.post:
-        pred = post_process_segmentation_array(pred, max_radius=3)
+        pred = post_process_segmentation_array(pred, lookuptable_csv=lookuptable_csv, max_radius=3)
     else:
         pred = pred.cpu().numpy()
     pred = restore_prediction_to_original_shape(pred, original_shape)
