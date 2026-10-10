@@ -25,7 +25,7 @@ We are continuously exploring additional anatomical labeling protocols, MRI moda
 
 Through these efforts, we hope to expand the applicability of SingleBrainSeg and contribute reusable resources to the broader neuroimaging community.
 
-**Code Availability:** The current repository provides inference code and pretrained model weights. The complete training code will be released upon acceptance of our manuscript.
+We will continue to maintain and improve SingleBrainSeg. If you have any questions, encounter issues, or have suggestions, please feel free to open an issue on GitHub. We welcome your feedback and contributions!
 
 ## 🤝 Collaboration & Community
 
