@@ -1,9 +1,10 @@
 
-<h1 align="center">SingleBrainSeg</h1>
+<h1 align="center"><strong>SingleBrainSeg</strong></h1>
 
 <h3 align="center">
-  One Annotation. Your Protocol. Your Brain Segmenter.
+  <strong>One Annotation.&emsp;&emsp;Your Protocol.&emsp;&emsp;Your Brain Segmenter.</strong>
 </h3>
+
 
 
 **SingleBrainSeg** is a label-efficient framework for building **customized 3D brain MRI segmentation models from a single annotated subject**, leveraging unlabeled data to minimize manual annotation requirements.
