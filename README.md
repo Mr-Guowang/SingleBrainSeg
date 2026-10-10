@@ -38,65 +38,75 @@ Feel free to open an issue or reach out to us.
 **Let's work together to make brain segmentation more accessible across diverse research applications!**
 
 
-## Latest Updates
+
+## 📢 Latest Updates
+
+We are continuously improving SingleBrainSeg and expanding its functionality. Stay tuned for future updates!
 
 | Date | Update |
-| --- | --- |
-| 2026-10-11 | Update the training code. |
-| 2026-10-10 | Update the testing code and test weights. Now you can try on the test data / your own data. |
-| 2026-10-09 | Initial GitHub release with Python code. |
+|:---:|---|
+| **2026-10-11** | 🚀 Released the training code for SingleBrainSeg. |
+| **2026-10-10** | 🧠 Released the inference pipeline and pretrained model weights. You can now test SingleBrainSeg on our example data or your own MRI scans. |
+| **2026-10-09** | 🎉 Initial release of the SingleBrainSeg GitHub repository. |
 
-## Installation
+---
 
-Clone this repository and install the Python dependencies:
+## 🛠️ Installation
+
+Clone the repository and install the required dependencies:
 
 ```bash
-git clone <THIS_REPOSITORY_URL>
-cd Brainseg_github
+git clone https://github.com/Mr-Guowang/SingleBrainSeg.git
+cd SingleBrainSeg
 
 conda create -n singlebrainseg python=3.10 -y
 conda activate singlebrainseg
+
 pip install -r requirements.txt
 ```
 
-If you use GPU inference, please make sure your CUDA / PyTorch installation is compatible with your system.
+> [!NOTE]
+> For GPU-accelerated inference and training, please ensure that your PyTorch installation is compatible with your CUDA version and GPU drivers.
 
-## Getting Started via Python
+---
 
-The main testing entry is:
+## ⚡ Quick Start
+
+SingleBrainSeg provides a Python-based inference pipeline for **protocol-specific 3D brain MRI segmentation**.
+
+To explore the available inference options:
 
 ```bash
 python backbone/inference.py -h
 ```
 
-### Preprocessing Requirement
+### 🧩 Step 1. Prepare Your MRI Data
 
-Before running SingleBrainSeg, the input T1-weighted MRI should be preprocessed as follows:
+Before running inference, input MRI scans should undergo the following preprocessing steps:
 
-- N4 bias field correction using ANTs.
-- Skull stripping using SynthStrip.
-- Rigid registration to the template using ANTs.
+1. **N4 Bias Field Correction** — Correct intensity inhomogeneity using ANTs.
+2. **Skull Stripping** — Extract brain tissue using SynthStrip.
+3. **Rigid Registration** — Align the brain image to the corresponding template using ANTs.
 
-The inference input should be the preprocessed image in the template-aligned space.
+The input to SingleBrainSeg should be a **preprocessed MRI volume aligned to the appropriate template space**.
 
-## Notice
+The current framework supports adult T1-weighted MRI and neonatal T2-weighted MRI under their corresponding labeling protocols.
 
-This release provides the testing/inference code, test weights, and training code.
+### 📦 Step 2. Download Pretrained Model Weights
 
-We are still polishing the repository for public use. The code, documentation, pretrained weights, and examples will be continuously updated.
+Pretrained checkpoints and shared resources are available through **Baidu Netdisk**:
 
-## Download Test Weights
+- 🔗 **Download:** [SingleBrainSeg Model Weights](https://pan.baidu.com/s/1FDvIuLA0eJ1rGxUB9B1YSA?pwd=g7yu)
+- 🔑 **Extraction Code:** `g7yu`
 
-The test weights and shared files are available via **Baidu Netdisk**:
+After downloading, specify the absolute path to the corresponding model checkpoint using the `--checkpoint` argument.
 
-- **Download link:** [Baidu Netdisk](https://pan.baidu.com/s/1FDvIuLA0eJ1rGxUB9B1YSA?pwd=g7yu)
-- **Extraction code:** `g7yu`
+> [!IMPORTANT]
+> Make sure to select the checkpoint, dataset configuration, and lookup table corresponding to your target labeling protocol.
 
-After downloading, specify the absolute path to the model checkpoint using the `--checkpoint` argument in the inference command below.
+### 🧠 Step 3. Run Inference
 
-### Run Inference
-
-Minimal example:
+**Example 1: Adult brain MRI (1.0 mm isotropic resolution)**
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 \
@@ -111,7 +121,7 @@ python backbone/inference.py \
   --post
 ```
 
-For infant or high-resolution data, use the corresponding target spacing, for example:
+**Example 2: Neonatal brain MRI (0.5 mm isotropic resolution)**
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 \
@@ -119,39 +129,70 @@ python backbone/inference.py \
   --dataset_json path/to/dataset.json \
   --lookuptable_csv path/to/Brain_lookuptable.csv \
   --checkpoint /absolute/path/to/checkpoint.pth \
-  --image path/to/preprocessed_T1w.nii.gz \
+  --image path/to/preprocessed_T2w.nii.gz \
   --out outputs/segmentation.nii.gz \
   --gpu 0 \
   --target_spacing 0.5 0.5 0.5 \
   --post
 ```
 
-## Repository Structure
+The resulting segmentation will be saved as a NIfTI file at the specified output path.
 
-```text
-Brainseg_github/
-├── backbone/             # network, inference, training scaffold, data utilities
-├── nnunetv2/             # minimal nnU-Net dependencies used by this project
-├── online_iteration/     # Bayesian confidence and online pseudo-label update utilities
-├── requirements.txt
-└── README.md
+For additional inference options, run:
+
+```bash
+python backbone/inference.py --help
 ```
 
-## Training Code
+---
 
-The training entry is:
+## 📂 Repository Structure
+
+The main components of SingleBrainSeg are organized as follows:
+
+```text
+SingleBrainSeg/
+├── backbone/               # Network architecture, inference, training, and data utilities
+├── nnunetv2/                # nnU-Net components used by SingleBrainSeg
+├── online_iteration/       # Bayesian confidence estimation and pseudo-label updates
+├── requirements.txt        # Python dependencies
+└── README.md               # Project documentation
+```
+
+---
+
+## 🏋️ Training
+
+SingleBrainSeg provides a training pipeline for **customizing brain segmentation models using a single annotated subject and unlabeled MRI data**.
+
+### Training Overview
+
+The default training procedure consists of two stages:
+
+**Stage 1: Supervised Warm-up (100 epochs)**
+
+Establish an initial segmentation model using supervised training with the available annotation and augmented image–label pairs.
+
+**Stage 2: Semi-Supervised Optimization (300 epochs)**
+
+Jointly optimize the segmentation model through:
+
+- **Supervised Learning** — Maintain reliable supervision from labeled data.
+- **Bayesian Pseudo-Label Learning** — Leverage unlabeled data through confidence-guided pseudo-label supervision.
+- **Protocol-Adaptive Regularization** — Introduce complementary anatomical guidance from a protocol-adapted teacher.
+- **Feature Distillation** — Improve student learning through teacher–student feature alignment.
+
+By default, Bayesian pseudo-labels and their confidence estimates are refreshed every **10 epochs**.
+
+### Training Configuration
+
+To view available training parameters:
 
 ```bash
 python backbone/training_paper.py -h
 ```
 
-The default training schedule is:
-
-- 100 epochs of supervised warm-up.
-- 300 epochs of joint pseudo-label learning, supervised learning, synthetic teacher regularization, and feature distillation.
-- Bayesian pseudo-label refresh every 10 epochs by default.
-
-Example command:
+### 🚀 Example Training Command
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 \
@@ -170,14 +211,55 @@ python backbone/training_paper.py \
   --deep_supervision
 ```
 
-For infant or high-resolution data, use:
+For neonatal or high-resolution MRI data, modify the corresponding spacing parameter:
 
 ```bash
 --confidence_iter_target_spacing 0.5 0.5 0.5
 ```
-## Citation
 
-If you find this project useful, please consider citing our work. The citation entry will be updated after the paper is accepted.
+> [!NOTE]
+> Please adjust the number of classes, labeling protocol configuration, lookup table, and image spacing according to your target dataset.
+
+---
+
+## 📝 Release Notes
+
+SingleBrainSeg is under active development and will be continuously maintained.
+
+We are working to improve:
+
+- 🧠 **Labeling Protocols** — Support additional anatomical labeling systems and customized segmentation tasks.
+- 🔬 **MRI Modalities** — Extend compatibility with different MRI modalities and acquisition protocols.
+- 📦 **Pretrained Models** — Expand the availability of pretrained weights for diverse applications.
+- 🛠️ **Code & Documentation** — Improve reproducibility, usability, and example workflows.
+
+Our long-term goal is to provide a flexible and accessible framework for **customizing brain segmentation models with minimal annotation effort**.
+
+### 💬 Questions & Feedback
+
+We will continue to maintain and improve SingleBrainSeg.
+
+If you encounter any problems, have questions about the code, or would like to suggest new features, please feel free to **[open an issue](https://github.com/Mr-Guowang/SingleBrainSeg/issues)**.
+
+We welcome your feedback, suggestions, and contributions!
+
+---
+
+## 🤝 Collaboration
+
+**We warmly welcome collaborations with researchers and developers in the neuroimaging community!**
+
+If you are interested in adapting SingleBrainSeg to a new anatomical labeling protocol, MRI modality, or customized segmentation task, we would be happy to explore potential collaborations.
+
+We hope to work together with the community to expand support for diverse labeling protocols and contribute useful resources to brain image analysis research.
+
+---
+
+## 📚 Citation
+
+If you find SingleBrainSeg useful in your research, please consider citing our work.
+
+The official citation will be updated upon publication.
 
 ```bibtex
 @misc{singlebrainseg2026,
@@ -188,6 +270,16 @@ If you find this project useful, please consider citing our work. The citation e
 }
 ```
 
-## Acknowledgments
+---
 
-This project uses or refers to components from several excellent open-source projects, including nnU-Net, SynthMorph, MONAI, and related medical image analysis toolkits.
+## 🙏 Acknowledgments
+
+SingleBrainSeg builds upon and benefits from several outstanding open-source projects and research frameworks, including:
+
+- **nnU-Net** — Self-configuring deep learning for biomedical image segmentation.
+- **SynthMorph** — Learning-based deformable image registration.
+- **MONAI** — Open-source framework for deep learning in medical imaging.
+
+We sincerely thank the developers and research communities behind these projects for making their work publicly available.
+
+Their contributions have greatly supported the development of SingleBrainSeg.
